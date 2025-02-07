@@ -9,7 +9,7 @@ data class Task(
     val title: String,
     val description: String,
     val completed: Boolean = false,
-    val userId: Int
+    val userId: Int? = null
 )
 
 @Serializable

@@ -3,6 +3,7 @@ package com.todo
 import com.todo.models.Task
 import com.todo.models.UpdateCompletionRequest
 import com.todo.service.TaskService
+import com.todo.utils.getAuthenticatedUsername
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -17,28 +18,27 @@ fun Route.taskRoutes(taskService: TaskService) {
 
             get {
                 // Get principal and check if not null
-                val principal = call.principal<JWTPrincipal>()
-                if (principal == null) {
-                    call.respond(HttpStatusCode.Unauthorized, "Invalid or missing token")
-                    return@get
-                }
+                //val principal = call.principal<JWTPrincipal>()
+                //if (principal == null) {
+                //    call.respond(HttpStatusCode.Unauthorized, "Invalid or missing token")
+                //    return@get
+                //}
+//
+                //// Get username from payload
+                //val username = principal.payload.getClaim("username").asString()
+                //if (username.isNullOrBlank()) {
+                //    call.respond(HttpStatusCode.Unauthorized, "Invalid token")
+                //    return@get
+                //}
 
-                // Get username from payload
-                val username = principal.payload.getClaim("username").asString()
-                if (username.isNullOrBlank()) {
-                    call.respond(HttpStatusCode.Unauthorized, "Invalid token")
-                    return@get
-                }
-
-                // return list of tasks by user
+                val username = call.getAuthenticatedUsername() ?: return@get
+                println("isername: $username")
                 val tasks = taskService.getAllTasks(username)
                 call.respond(tasks)
             }
 
             get("{id}") {
-                val principal = call.principal<JWTPrincipal>()
-                val username = principal?.getClaim("username", String::class)
-                    ?: return@get call.respond(HttpStatusCode.Unauthorized)
+                val username = call.getAuthenticatedUsername() ?: return@get
 
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@get call.respond(HttpStatusCode.BadRequest, "Invalid id")
@@ -52,14 +52,19 @@ fun Route.taskRoutes(taskService: TaskService) {
             }
 
             post {
-                val username = ""
-                val task = call.receive<Task>()
-                val taskId = taskService.createTask(task, username)
-                call.respond(mapOf("id" to taskId))
+                try {
+                    val username = call.getAuthenticatedUsername() ?: return@post
+                    val task = call.receive<Task>()
+                    println("task: $task")
+                    val taskId = taskService.createTask(task, username)
+                    call.respond(mapOf("id" to taskId))
+                } catch (e: Exception) {
+                    println("Error: ${e.message}")
+                }
             }
 
             put("{id}") {
-                val username = ""
+                val username = call.getAuthenticatedUsername() ?: return@put
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@put call.respond(HttpStatusCode.BadRequest, "Invalid ID")
 
@@ -72,7 +77,7 @@ fun Route.taskRoutes(taskService: TaskService) {
             }
 
             patch("{id}/complete") {
-                val username = ""
+                val username = call.getAuthenticatedUsername() ?: return@patch
                 val id = call.parameters["id"]?.toIntOrNull()
                     ?: return@patch call.respond(HttpStatusCode.BadRequest, "Invalid ID")
 
