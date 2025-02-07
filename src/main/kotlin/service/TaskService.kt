@@ -10,6 +10,7 @@ class TaskService(private val userService: UserService) {
 
     fun getAllTasks(username: String) : List<Task> = transaction {
         val userId = userService.getUserIdByUsername(username) ?: return@transaction emptyList()
+        println("userid: $userId")
         Tasks.select { Tasks.userId eq userId }
         .map { rowToTask(it) }
     //Tasks.selectAll().map { rowToTask(it) }
@@ -24,12 +25,13 @@ class TaskService(private val userService: UserService) {
     }
 
     fun createTask(task: Task, username: String): Int = transaction {
-        val userId = userService.getUserIdByUsername(username) ?: throw IllegalArgumentException("User not found")
+        val usernameId = userService.getUserIdByUsername(username) ?: throw IllegalArgumentException("User not found")
+        println("userId: $usernameId")
         Tasks.insert {
             it[title] = task.title
             it[description] = task.description
             it[completed] = task.completed
-            it[Tasks.userId] = userId
+            it[userId] = usernameId
         }[Tasks.id]
     }
 
@@ -58,7 +60,7 @@ class TaskService(private val userService: UserService) {
             title = row[Tasks.title],
             description = row[Tasks.description],
             completed = row[Tasks.completed],
-            userId = row[Users.id]
+            userId = row[Tasks.userId]
         )
     }
 }
