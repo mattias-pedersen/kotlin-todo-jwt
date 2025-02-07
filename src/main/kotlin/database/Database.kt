@@ -2,13 +2,15 @@ package com.todo.database
 
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.Table
+import io.github.cdimascio.dotenv.dotenv
 
 object DatabaseFactory {
     fun init() {
-        val driverClassName = "org.postgresql.Driver"
-        val jdbcUrl = "jdbc:postgresql://localhost:5432/kotlinTodo"
-        val user = "postgres"
-        val password = "6i28dns6"
+        val dotenv = dotenv()
+        val driverClassName = dotenv["DB_DRIVER"]
+        val jdbcUrl = dotenv["DB_URL"]
+        val user = dotenv["DB_USER"]
+        val password = dotenv["DB_PASSWORD"]
 
         Database.connect(jdbcUrl, driverClassName, user, password)
     }

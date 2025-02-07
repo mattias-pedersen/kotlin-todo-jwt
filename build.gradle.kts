@@ -34,6 +34,7 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-jdbc:0.41.1")
     implementation("org.postgresql:postgresql:42.7.2") // or any other database driver
     implementation("ch.qos.logback:logback-classic:1.4.12") // for logging
+    implementation("io.github.cdimascio:dotenv-kotlin:6.4.1")
 
     // Auth
     implementation("io.ktor:ktor-server-auth:2.x.x")
